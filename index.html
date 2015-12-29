@@ -69,7 +69,7 @@ var urlAccessToken = (location.hash.match(/access_token=([^&?=]+)/) || ['',null]
 if (urlAccessToken){
   accessToken = localStorage.instaAccessToken = urlAccessToken;
   history.replaceState({}, document.title, location.href.substr(0, location.href.length-location.hash.length));
-  submitForm();
+  setTimeout(submitForm, 1000);
 }
 
 if (sessionStorage.instaURL){
