@@ -63,12 +63,18 @@ var accessToken = localStorage.instaAccessToken || '';
 
 var $placeholder = document.getElementById('media-placeholder');
 var $url = document.getElementById('media-url');
+var $form = document.getElementById('media-form');
 
 var urlAccessToken = (location.hash.match(/access_token=([^&?=]+)/) || ['',null])[1];
 if (urlAccessToken){
   accessToken = localStorage.instaAccessToken = urlAccessToken;
   history.replaceState({}, document.title, location.href.substr(0, location.href.length-location.hash.length));
-  submitForm();
+  $form.submit();
+}
+
+if (sessionStorage.instaURL){
+  $url.value = sessionStorage.instaURL || '';
+  delete sessionStorage.instaURL;
 }
 
 function s(url, cb){
@@ -80,7 +86,6 @@ function s(url, cb){
 function submitForm(e){
   if (e) e.preventDefault();
   $placeholder.innerHTML = '<p>Loading&hellip;</p>';
-  var url = $url.value;
   var id = (url.match(/instagram\.com\/p\/([^/]+)/) || ['', null])[1];
   if (id){
     s('https://api.instagram.com/v1/media/shortcode/' + encodeURIComponent(id) + '?access_token=' + accessToken + '&callback=getMedia');
@@ -88,12 +93,12 @@ function submitForm(e){
     alert('Invalid Instagram URL');
   }
 }
-document.getElementById('media-form').onsubmit = submitForm;
+$form.onsubmit = submitForm;
 
 document.getElementById('example-link').onclick = function(e){
   e.preventDefault();
   $url.value = e.target.href;
-  submitForm();
+  $form.submit();
 };
 
 function getMedia(response){
@@ -103,6 +108,7 @@ function getMedia(response){
       + 'Link: <a href="' + data.link + '">' + data.link + '</a></p>'
       + '<img src="' + data.images.standard_resolution.url + '">'
   } else { // Not authenticated
+    sessionStorage.instaURL = $url.value;
     location.href = 'https://api.instagram.com/oauth/authorize/?client_id=' + clientID + '&redirect_uri=' + location.href + '&response_type=token&scope=basic+public_content';
   }
 }
