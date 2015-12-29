@@ -67,7 +67,7 @@ var $url = document.getElementById('media-url');
 var urlAccessToken = (location.hash.match(/access_token=([^&?=]+)/) || ['',null])[1];
 if (urlAccessToken){
   accessToken = localStorage.instaAccessToken = urlAccessToken;
-  history.replaceState({} ,document.title, '/');
+  history.replaceState({}, document.title, location.href.substr(0, location.href.length-location.hash.length));
   submitForm();
 }
 
