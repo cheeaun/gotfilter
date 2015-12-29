@@ -69,7 +69,7 @@ var urlAccessToken = (location.hash.match(/access_token=([^&?=]+)/) || ['',null]
 if (urlAccessToken){
   accessToken = localStorage.instaAccessToken = urlAccessToken;
   history.replaceState({}, document.title, location.href.substr(0, location.href.length-location.hash.length));
-  $form.submit();
+  submitForm();
 }
 
 if (sessionStorage.instaURL){
@@ -87,6 +87,7 @@ function submitForm(e){
   if (e) e.preventDefault();
   $placeholder.innerHTML = '<p>Loading&hellip;</p>';
   var url = $url.value;
+  if (!url) return;
   var id = (url.match(/instagram\.com\/p\/([^/]+)/) || ['', null])[1];
   if (id){
     s('https://api.instagram.com/v1/media/shortcode/' + encodeURIComponent(id) + '?access_token=' + accessToken + '&callback=getMedia');
@@ -99,7 +100,7 @@ $form.onsubmit = submitForm;
 document.getElementById('example-link').onclick = function(e){
   e.preventDefault();
   $url.value = e.target.href;
-  $form.submit();
+  submitForm();
 };
 
 function getMedia(response){
