@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Got Filter? &ndash; Check if the Instagram photo got filter or not</title>
+<style>
+body, input{
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+*{
+  box-sizing: border-box;
+}
+body{
+  margin: auto;
+  max-width: 640px;
+  padding: 1em;
+  background-color: #fafafa;
+}
+header{
+  padding-bottom: 1em;
+}
+header *{
+  margin: 0;
+  padding: 0;
+}
+input{
+  padding: .5em;
+  line-height: 1.5em;
+}
+input[type=url]{
+  width: 68%;
+}
+input[type=submit]{
+  width: 30%;
+}
+small{
+  opacity: .5;
+}
+img{
+  max-width: 100%;
+  height: auto;
+}
+footer{
+  border-top: 1px solid #eee;
+  margin-top: 2em;
+}
+</style>
+<header>
+  <h1>Got Filter?</h1>
+  <p>Check if the Instagram photo got filter or not.</p>
+</header>
+<form id="media-form">
+  <input type="url" autocomplete="url" autocapitalize="none" autocorrect="off" autofocus id="media-url" required>
+  <input type="submit" value="Check filter">
+  <div><small>E.g: <a href="http://instagram.com/p/_1iYBIS91z/" id="example-link">http://instagram.com/p/_1iYBIS91z/</a></small></div>
+</form>
+<div id="media-placeholder"></div>
+<footer>
+  <p>Yet another project by <a href="https://twitter.com/cheeaun">@cheeaun</a>. <a href="https://github.com/cheeaun/gotfilter">GitHub</a>.</p>
+</footer>
+<script>
+var clientID = 'e5b0ec2a4a0e44adaf239edcc9e8cb31';
+var accessToken = localStorage.instaAccessToken || '';
+
+var $placeholder = document.getElementById('media-placeholder');
+var $url = document.getElementById('media-url');
+
+var urlAccessToken = (location.hash.match(/access_token=([^&?=]+)/) || ['',null])[1];
+if (urlAccessToken){
+  accessToken = localStorage.instaAccessToken = urlAccessToken;
+  history.replaceState({} ,document.title, '/');
+  submitForm();
+}
+
+function s(url, cb){
+  var s = document.createElement('script');
+  s.src = url;
+  document.body.appendChild(s);
+}
+
+function submitForm(e){
+  if (e) e.preventDefault();
+  $placeholder.innerHTML = '<p>Loading&hellip;</p>';
+  var url = $url.value;
+  var id = (url.match(/instagram\.com\/p\/([^/]+)/) || ['', null])[1];
+  if (id){
+    s('https://api.instagram.com/v1/media/shortcode/' + encodeURIComponent(id) + '?access_token=' + accessToken + '&callback=getMedia');
+  } else {
+    alert('Invalid Instagram URL');
+  }
+}
+document.getElementById('media-form').onsubmit = submitForm;
+
+document.getElementById('example-link').onclick = function(e){
+  e.preventDefault();
+  $url.value = e.target.href;
+  submitForm();
+};
+
+function getMedia(response){
+  if (response && response.meta.code == 200){
+    var data = response.data;
+    $placeholder.innerHTML = '<p>Filter: <strong>' + data.filter + '</strong><br>'
+      + 'Link: <a href="' + data.link + '">' + data.link + '</a></p>'
+      + '<img src="' + data.images.standard_resolution.url + '">'
+  } else { // Not authenticated
+    location.href = 'https://api.instagram.com/oauth/authorize/?client_id=' + clientID + '&redirect_uri=' + location.href + '&response_type=token&scope=basic+public_content';
+  }
+}
+</script>
